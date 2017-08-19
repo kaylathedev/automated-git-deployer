@@ -1,0 +1,3 @@
+#!/bin/bash
+
+ssh -i $TEMP_FILE_PRIVATE_KEY -o UserKnownHostsFile=$TEMP_FILE_KNOWN_HOSTS $1 $2

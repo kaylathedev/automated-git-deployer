@@ -1,0 +1,42 @@
+{
+  "home": "/home/www-data",
+  "web-access-key": "myPA$$W0rd2015",
+  "repos": [
+    {
+      "name": "My Awesome Website",
+      "id": "username/my-awesome-website",
+      "branch": "master",
+      "location": "/srv/www/awesome-websites/mine",
+      "hooks": {
+        "post-update": [
+          "composer install -n"
+        ]
+      }
+    },
+    {
+      "name": "example",
+      "id": "admins/website",
+      "branch": "prod",
+      "location": "/srv/www/example",
+      "hooks": {
+        "post-update": [
+          "echo The website for example.com has been updated to [[branch]]."
+        ]
+      }
+    }
+  ],
+  "known-hosts": [
+    "[1]1234567890abcdef1234567890ab|something ssh-rsa 0000Put the keys of the known hosts here. This follows the same format as the SSH known_hosts file.",
+    "|1|aetjV4YmlHh8vxbN7K45c+oF2HA=|CQhoTM/KwNGtc74krUrdS0IC+DU= ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAubiN81eDcafrgMeLzaFPsw2kNvEcqTKl/VqLat/MaB33pZy0y3rJZtnqwR2qOOvbwKZYKiEO1O6VqNEBxKvJJelCq0dTXWT5pbO2gDXC6h6QDXCaHo6pOHGPUy+YBaGQRGuSusMEASYiWunYN0vCAI8QaXnWMXNMdFP3jHAJH0eDsoiGnLPBlBp4TNm6rYI74nMzgz3B9IikW4WVK+dc8KZJZWYjAuORU3jc1c/NPskD2ASinf8v3xnfXeukU0sJ5N6m5E8VLjObPEO+mN2t/FZTMZLiFqPWc/ALSqnMnnhwrNi2rbfg/rd/IpL8Le3pSBne8+seeFVBoGqzHM9yXw==",
+    "|1|kMLT7VejD6fwLr8FgS2qDcpBFHI=|7JRxSqf3dOisHjm55mtyw90AASo= ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAubiN81eDcafrgMeLzaFPsw2kNvEcqTKl/VqLat/MaB33pZy0y3rJZtnqwR2qOOvbwKZYKiEO1O6VqNEBxKvJJelCq0dTXWT5pbO2gDXC6h6QDXCaHo6pOHGPUy+YBaGQRGuSusMEASYiWunYN0vCAI8QaXnWMXNMdFP3jHAJH0eDsoiGnLPBlBp4TNm6rYI74nMzgz3B9IikW4WVK+dc8KZJZWYjAuORU3jc1c/NPskD2ASinf8v3xnfXeukU0sJ5N6m5E8VLjObPEO+mN2t/FZTMZLiFqPWc/ALSqnMnnhwrNi2rbfg/rd/IpL8Le3pSBne8+seeFVBoGqzHM9yXw==",
+    "|1|n0OO0UMMfHNv2p8NJGEzhWnQNTo=|JtBpbdh4uC+yKWslYuMOie7j86I= ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAubiN81eDcafrgMeLzaFPsw2kNvEcqTKl/VqLat/MaB33pZy0y3rJZtnqwR2qOOvbwKZYKiEO1O6VqNEBxKvJJelCq0dTXWT5pbO2gDXC6h6QDXCaHo6pOHGPUy+YBaGQRGuSusMEASYiWunYN0vCAI8QaXnWMXNMdFP3jHAJH0eDsoiGnLPBlBp4TNm6rYI74nMzgz3B9IikW4WVK+dc8KZJZWYjAuORU3jc1c/NPskD2ASinf8v3xnfXeukU0sJ5N6m5E8VLjObPEO+mN2t/FZTMZLiFqPWc/ALSqnMnnhwrNi2rbfg/rd/IpL8Le3pSBne8+seeFVBoGqzHM9yXw=="
+  ],
+  "private-key": [
+    "-----BEGIN RSA PRIVATE KEY-----",
+    "abcdefGHIJKLmnopqrstuvWXYZ1234567890abcdefghIJKLMNOP",
+    "QrstuvwXYZ12345678/ Your private key goes here /ABCD",
+    "EFGHIJKLMNOPQRStux/ It is separated by lines.  /yZ12",
+    "34567890abcdeFGHIJKLMNOPqrstuvwxYZ1234567890ABCDEFGH",
+    "-----END RSA PRIVATE KEY----- "
+  ]
+}
