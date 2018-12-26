@@ -1,57 +1,66 @@
+#!/usr/bin/php
 <?php
-function process($manager, $key, $logger) {
-  if (!$manager->compareWebAccessKeys($key)) {
-    $logger->info('User provided the wrong key : key = ' . $key);
-    return ['message' => 'Invalid key', 'code' => 1];
-  }
 
-  if (!isset($_GET['id'])) {
-    $logger->info('User failed to provide a repository id');
-    return ['message' => 'No repository specified!', 'code' => 1];
-  }
-
-  $id = trim($_GET['id']);
-  $repo = $manager->getRepositoryById($id);
-
-  if ($repo === null) {
-    $logger->info('User provided a non-existent repository id: ' . $id);
-    return ['message' => 'Unable to find repository!', 'code' => 1];
-  }
-
-  $logger->info('User started update of repository: ' . $repo);
-  try {
-    $manager->initalize();
-    $manager->execute($repo);
-  } catch (Exception $e) {
-    $logger->error($e);
-    $manager->cleanUp();
-    return ['message' => 'Exception! ' . $e, 'code' => 1];
-  }
-  $manager->cleanUp();
-
-  $logger->info('Successfully updated repository: ' . $repo);
-  return ['message' => 'Finished update!', 'code' => 0];
+if (!isset($argv)) {
+  echo 'Access denied', PHP_EOL;
+  return;
 }
 
+if (count($argv) < 2) {
+  echo 'You must pass the ids of the repositories as an argument!', PHP_EOL;
+  return;
+}
 
-date_default_timezone_set('America/New_York');
-
-$projectDirectory = dirname(__DIR__);
-require $projectDirectory . '/vendor/autoload.php';
+require dirname(__DIR__) . '/vendor/autoload.php';
 
 use AutomatedGitDeployer\Config;
-use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogHandler;
+use Monolog\Logger;
 
-$key     = isset($_GET['key']) ? $_GET['key'] : null;
 $manager = Config::createGitHookManagerFromDefaults();
 $logger  = new Logger('automated_git_deployer');
-
-$logger->pushHandler(new SyslogHandler('php_automated_git_deployer'));
+$logger->pushHandler(new StreamHandler('php://stdout'));
 $manager->logger = $logger;
 
-$result = process($manager, $key, $logger);
+$repositories = [];
 
-header('Content-type: application/json');
-echo json_encode($result);
+array_shift($argv);
+
+$usedWildcard = false;
+if (count($argv) === 1) {
+  $firstArgument = $argv[0];
+  if ('*' === $firstArgument) {
+    $repositories = $manager->getAllRepositories();
+    $usedWildcard = true;
+  }
+}
+
+if (!$usedWildcard) {
+  foreach ($argv as $argument) {
+    $repository = $manager->getRepositoryById($argument);
+    if (null === $repository) {
+      $logger->error('The following repository does not exist : ' . $argument);
+      return;
+    }
+    $repositories[] = $repository;
+  }
+}
+
+try {
+  $manager->initalize();
+
+  foreach ($repositories as $repo) {
+    $logger->info('Attempting to update repository. ' . $repo);
+    $manager->cloneIfNotExists($repo);
+    $manager->clean($repo);
+    $manager->pull($repo);
+    $manager->runHooks($repo);
+    $manager->secure($repo);
+    $logger->info('Successfully updated repo! ' . $repo);
+  }
+} catch (Exception $e) {
+  $logger->error($e);
+} finally {
+  $manager->cleanUp();
+}
