@@ -6,6 +6,7 @@ function process($manager, $key, $logger) {
   }
 
   $input = file_get_contents('php://input');
+  file_put_contents('plzremove-' . time(), json_encode(json_decode($input), JSON_PRETTY_PRINT));
   $payload = json_decode($input, true);
   if (!is_array($payload)) {
     $logger->info('Client failed to provide repository information');
@@ -41,7 +42,13 @@ function process($manager, $key, $logger) {
   $logger->info('BitBucket initiated a repository update: ' . $repo);
   try {
     $manager->initalize();
-    $manager->execute($repo);
+
+    $manager->cloneIfNotExists($repo);
+    $manager->clean($repo);
+    $manager->pull($repo);
+    $manager->runHooks($repo);
+    $manager->secure($repo);
+
   } catch (Exception $e) {
     $logger->error($e);
     $manager->cleanUp();
@@ -66,7 +73,6 @@ use Monolog\Handler\SyslogHandler;
 $key     = isset($_GET['key']) ? $_GET['key'] : null;
 $manager = Config::createGitHookManagerFromDefaults();
 $logger  = new Logger('automated_git_deployer');
-
 $logger->pushHandler(new SyslogHandler('php_automated_git_deployer'));
 $manager->logger = $logger;
 
