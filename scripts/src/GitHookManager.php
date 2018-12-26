@@ -81,24 +81,20 @@ class GitHookManager
     file_put_contents($this->knownHostsLocation, implode("\n", $this->knownHosts));
   }
 
-  /**
-   * Executes the necessary commands to deploy the website.
-   */
-  public function execute(Repository $repository)
+  public function debug(Repository $repository)
   {
-    if ($this->logger !== null) {
-      $this->logger->info('Attempting to update repository. ' . $repository);
-    }
+    
+  }
 
-    $workingDir = $repository->location;
-    $gitDir = $workingDir . '/.git';
-
-    $gitArgs = '--work-tree=' . escapeshellarg($workingDir);
-    $gitArgs .= ' --git-dir=' . escapeshellarg($gitDir);
-
-    if (is_dir($workingDir)) {
+  public function cloneIfNotExists(Repository $repository)
+  {
+    if (is_dir($repository->location)) {
       // Check if there's a repository
-      $args = [$gitArgs, 'status -s'];
+      $args = [
+      '--work-tree=' . escapeshellarg($repository->location),
+      '--git-dir=' . escapeshellarg($repository->location . '/.git'),
+        'status -s',
+      ];
       $result = self::executeCommand($this->gitBinary, $args);
       if ($result['code'] === 128) {
         // There's exists no repository
@@ -109,7 +105,11 @@ class GitHookManager
         throw new DeploymentException($msg);
       }
     } else {
-      $args = ['clone', $repository->origin, $repository->location];
+      $args = [
+        'clone',
+        $repository->origin,
+        $repository->location,
+      ];
       $result = self::executeCommand($this->gitBinary, $args);
       if ($result['code'] !== 0) {
         $output = self::formatCommandResult($result);
@@ -125,8 +125,16 @@ class GitHookManager
       $this->logger->info('Cloned repository at ' . $repository->location);
     }
 
+  }
+
+  public function clean(Repository $repository)
+  {
     // Reset repository to head
-    $args = [$gitArgs, 'clean -f --quiet'];
+    $args = [
+      '--work-tree=' . escapeshellarg($repository->location),
+      '--git-dir=' . escapeshellarg($repository->location . '/.git'),
+      'clean -f --quiet',
+    ];
     $result = self::executeCommand($this->gitBinary, $args);
     if ($result['code'] !== 0) {
       $output = self::formatCommandResult($result);
@@ -136,9 +144,16 @@ class GitHookManager
       }
       throw new DeploymentException($msg);
     }
+  }
 
+  public function pull(Repository $repository)
+  {
     // Pull Changes
-    $args = [$gitArgs, 'pull'];
+    $args = [
+      '--work-tree=' . escapeshellarg($repository->location),
+      '--git-dir=' . escapeshellarg($repository->location . '/.git'),
+      'pull',
+    ];
     $result = self::executeCommand($this->gitBinary, $args);
     if ($result['code'] !== 0) {
       $output = self::formatCommandResult($result);
@@ -150,8 +165,10 @@ class GitHookManager
       }
       throw new DeploymentException($msg);
     }
+  }
 
-    // Execute Hooks
+  public function runHooks(Repository $repository)
+  {
     foreach ($repository->hooksPostUpdate as $hook) {
       $args = $hook->compileCommand($repository);
       $result = self::executeCommand($args);
@@ -168,8 +185,11 @@ class GitHookManager
         throw new DeploymentException($msg);
       }
     }
+  }
 
-    $args = ['-R og-rx', $gitDir];
+  public function secure(Repository $repository)
+  {
+    $args = ['-R og-rx', escapeshellarg($repository->location . '/.git')];
     $result = self::executeCommand('chmod', $args);
     if ($result['code'] !== 0) {
       $output = self::formatCommandResult($result);
@@ -178,10 +198,6 @@ class GitHookManager
         $this->logger->error($msg);
       }
       throw new DeploymentException($msg);
-    }
-
-    if ($this->logger !== null) {
-      $this->logger->info('Successfully updated repo! ' . $repository);
     }
   }
 
