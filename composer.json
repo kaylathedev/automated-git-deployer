@@ -1,5 +1,5 @@
 {
-  "name": "wafflestealer654/goodwillfire18",
+  "name": "kaylathedev/automated-git-deployer",
   "type": "project",
   "require": {
     "monolog/monolog": "^1.19"
@@ -7,10 +7,7 @@
   "autoload": {
     "psr-4": {
       "AutomatedGitDeployer\\": "scripts/src"
-    },
-    "files": [
-      "scripts/url.php"
-    ]
+    }
   },
   "minimum-stability": "stable",
   "prefer-stable": true
